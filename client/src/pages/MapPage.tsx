@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   MapContainer,
@@ -19,18 +19,6 @@ import SplitText from "../components/ui/SplitText";
 // Fix default marker icon
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
-import LoginButton from '../components/ui/LoginButton';
-
-// Utility to create colored icons
-const createColoredIcon = (color: string) =>
-  L.icon({
-    iconUrl: `https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|${color}`, // Google Chart pin
-    iconRetinaUrl: `https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|${color}`,
-    shadowUrl: markerShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [0, -30],
-  });
 
 const DefaultIcon = L.icon({
   iconUrl: markerIcon2x,
@@ -40,15 +28,25 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Inline HeatmapLayer component using leaflet.heat
+// Utility to create colored icons
+const createColoredIcon = (color: string) =>
+  L.icon({
+    iconUrl: `https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|${color}`,
+    iconRetinaUrl: `https://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|${color}`,
+    shadowUrl: markerShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [0, -30],
+  });
+
+// HeatmapLayer component
 const HeatmapLayer = ({ points }: { points: [number, number, number][] }) => {
   const map = useMap();
 
-  useState(() => {
+  useEffect(() => {
     if (!map || points.length === 0) return;
-
     const layer = (L as any).heatLayer(points, {
-      radius: 65, // Heatmap blur radius
+      radius: 65,
       blur: 25,
       maxZoom: 17,
     }).addTo(map);
@@ -56,74 +54,38 @@ const HeatmapLayer = ({ points }: { points: [number, number, number][] }) => {
     return () => {
       map.removeLayer(layer);
     };
-  });
+  }, [map, points]);
 
   return null;
 };
 
 const MapPage = () => {
   const { t } = useTranslation();
-  const [selectedType, setSelectedType] = useState<
-    "OCEAN_DEBRIS" | "TSUNAMI_WARNING"
-  >("OCEAN_DEBRIS");
+  const [selectedType, setSelectedType] = useState<"OCEAN_DEBRIS" | "TSUNAMI_WARNING">(
+    "OCEAN_DEBRIS"
+  );
 
-  // Dummy heatmap points
   const dummyHeatmapPoints: [number, number, number][] = [
-    [20.5937, 78.9629, 1], // India
-    [37.7749, -122.4194, 1], // San Francisco
-    [51.5074, -0.1278, 1], // London
+    [20.5937, 78.9629, 1],
+    [37.7749, -122.4194, 1],
+    [51.5074, -0.1278, 1],
   ];
 
-  // Hazard Markers
   const hazardMarkers = [
-    {
-      id: 1,
-      lat: 20.5937,
-      lng: 78.9629,
-      type: "TSUNAMI_WARNING",
-      description: "Dummy warning in India",
-      color: "red",
-      radius: 1000,
-    },
-    {
-      id: 2,
-      lat: 37.7749,
-      lng: -122.4194,
-      type: "TSUNAMI_WARNING",
-      description: "Dummy warning in San Francisco",
-      color: "orange",
-      radius: 1200,
-    },
-    {
-      id: 3,
-      lat: 13.0827, // Chennai
-      lng: 80.2707,
-      type: "FLOOD_ALERT",
-      description: "Heavy rainfall causing flood risks in Chennai",
-      color: "blue",
-      radius: 1500,
-    },
-    {
-      id: 4,
-      lat: 11.748, // Cuddalore
-      lng: 79.768,
-      type: "CYCLONE_WARNING",
-      description: "Cyclone alert in Cuddalore region",
-      color: "green",
-      radius: 2000,
-    },
-    {
-      id: 5,
-      lat: 8.0883, // Kanyakumari
-      lng: 77.5385,
-      type: "TSUNAMI_WARNING",
-      description: "High tsunami risk in Kanyakumari",
-      color: "purple",
-      radius: 2500,
-    },
+    { id: 1, lat: 20.5937, lng: 78.9629, type: "TSUNAMI_WARNING", description: "Dummy warning in India", color: "red", radius: 1000 },
+    { id: 2, lat: 37.7749, lng: -122.4194, type: "TSUNAMI_WARNING", description: "Dummy warning in San Francisco", color: "orange", radius: 1200 },
+    { id: 3, lat: 13.0827, lng: 80.2707, type: "FLOOD_ALERT", description: "Heavy rainfall causing flood risks in Chennai", color: "blue", radius: 1500 },
+    { id: 4, lat: 11.748, lng: 79.768, type: "CYCLONE_WARNING", description: "Cyclone alert in Cuddalore region", color: "green", radius: 2000 },
+    { id: 5, lat: 8.0883, lng: 77.5385, type: "TSUNAMI_WARNING", description: "High tsunami risk in Kanyakumari", color: "purple", radius: 2500 },
   ];
 
-  const mapCenter: LatLngExpression = [12.5, 80]; // Centered on South India
+  // Save hazard markers to localStorage on mount
+  useEffect(() => {
+    localStorage.setItem("hazardMarkers", JSON.stringify(hazardMarkers));
+    window.dispatchEvent(new Event("hazardMarkersUpdated")); // optional: notify other pages
+  }, []);
+
+  const mapCenter: LatLngExpression = [12.5, 80];
   const mapProps: MapContainerProps = {
     center: mapCenter,
     zoom: 6,
@@ -132,17 +94,11 @@ const MapPage = () => {
 
   const tileLayerProps: TileLayerProps = {
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    attribution:
-      '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>',
+    attribution: '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>',
   };
 
   return (
-    <div className="relative pt-24 p-8 max-w-6xl mx-auto bg-dark-bg min-h-screen">
-      
-      <div className="absolute top-16 right-6">
-        <LoginButton />
-      </div>
-
+    <div className="pt-24 p-8 max-w-6xl mx-auto bg-dark-bg min-h-screen">
       <SplitText
         text="Crisis Map"
         className="text-4xl md:text-5xl font-bold text-royal-gold mb-8"
@@ -151,21 +107,16 @@ const MapPage = () => {
         tag="h1"
         textAlign="center"
       />
-      <p className="text-center text-muted-foreground mb-8 max-w-3xl mx-auto">
-        {t("homepage_about")}
-      </p>
-      {/* Selection Buttons */}
+      <p className="text-center text-muted-foreground mb-8 max-w-3xl mx-auto">{t("homepage_about")}</p>
+
+      {/* Data Layer Buttons */}
       <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <label className="text-foreground font-medium">
-          Select Data Layer:
-        </label>
+        <label className="text-foreground font-medium">Select Data Layer:</label>
         <div className="flex gap-2">
           <button
             onClick={() => setSelectedType("OCEAN_DEBRIS")}
             className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover-elevate ${
-              selectedType === "OCEAN_DEBRIS"
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-accent"
+              selectedType === "OCEAN_DEBRIS" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-accent"
             }`}
           >
             Pollution Hotspots
@@ -173,9 +124,7 @@ const MapPage = () => {
           <button
             onClick={() => setSelectedType("TSUNAMI_WARNING")}
             className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover-elevate ${
-              selectedType === "TSUNAMI_WARNING"
-                ? "bg-destructive text-destructive-foreground"
-                : "bg-muted text-muted-foreground hover:bg-accent"
+              selectedType === "TSUNAMI_WARNING" ? "bg-destructive text-destructive-foreground" : "bg-muted text-muted-foreground hover:bg-accent"
             }`}
           >
             Live Crisis Events
@@ -183,42 +132,29 @@ const MapPage = () => {
         </div>
       </div>
 
-      {/* Leaflet Map */}
+      {/* Map */}
       <div className="bg-card/50 border border-card-border rounded-lg overflow-hidden">
         <MapContainer {...mapProps}>
           <TileLayer {...tileLayerProps} />
 
-          {selectedType === "OCEAN_DEBRIS" && dummyHeatmapPoints.length > 0 && (
-            <HeatmapLayer points={dummyHeatmapPoints} />
-          )}
+          {selectedType === "OCEAN_DEBRIS" && dummyHeatmapPoints.length > 0 && <HeatmapLayer points={dummyHeatmapPoints} />}
 
           {selectedType === "TSUNAMI_WARNING" &&
             hazardMarkers.map((point) => (
-              <>
-                <Marker
-                  key={point.id}
-                  position={[point.lat, point.lng]}
-                  icon={createColoredIcon(point.color)}
-                >
-                  <Popup>
-                    <strong>{point.type.replace("_", " ")}</strong>
-                    <br />
-                    {point.description}
-                    <br />
-                    Lat: {point.lat.toFixed(4)}, Lng: {point.lng.toFixed(4)}
-                  </Popup>
-                </Marker>
-                {/* Visible Impact Zone */}
+              <Marker key={point.id} position={[point.lat, point.lng]} icon={createColoredIcon(point.color)}>
+                <Popup>
+                  <strong>{point.type.replace("_", " ")}</strong>
+                  <br />
+                  {point.description}
+                  <br />
+                  Lat: {point.lat.toFixed(4)}, Lng: {point.lng.toFixed(4)}
+                </Popup>
                 <Circle
                   center={[point.lat, point.lng]}
-                  radius={point.radius} // meters
-                  pathOptions={{
-                    color: point.color,
-                    fillColor: point.color,
-                    fillOpacity: 0.25,
-                  }}
+                  radius={point.radius}
+                  pathOptions={{ color: point.color, fillColor: point.color, fillOpacity: 0.25 }}
                 />
-              </>
+              </Marker>
             ))}
         </MapContainer>
       </div>

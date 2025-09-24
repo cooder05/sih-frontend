@@ -24,7 +24,7 @@ const LoginButton = () => {
   return username ? (
     <span
       onClick={handleLogout}
-      className="cursor-pointer text-foreground font-semibold px-4 py-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+      className="cursor-pointer text-foreground font-semibold px-4 py-2 bg-gray rounded-lg hover:bg-gray-700 transition-colors"
       title="Click to logout"
     >
       Welcome, {username} {isAdmin && "(Admin)"}

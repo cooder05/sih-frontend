@@ -2,8 +2,6 @@ import { useTranslation } from "react-i18next";
 import { useState } from 'react';
 import apiClient from '../services/apiClient';
 import SplitText from '../components/ui/SplitText';
-import LoginButton from '../components/ui/LoginButton';
-
 const ReportPage = () => {
   const { t } = useTranslation();
   const [description, setDescription] = useState('');
@@ -50,11 +48,7 @@ const ReportPage = () => {
   };
 
   return (
-    <div className=" relative pt-24 p-8 max-w-2xl mx-auto bg-dark-bg min-h-screen">
-      
-      <div className="absolute top-6 right-6">
-        <LoginButton />
-      </div>
+    <div className="pt-24 p-8 max-w-2xl mx-auto bg-dark-bg min-h-screen">
 
       <SplitText
         text="Report Ocean Hazard"

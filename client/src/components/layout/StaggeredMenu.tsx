@@ -1,6 +1,8 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import '../../styles/StaggeredMenu.css';
+import LoginButton from '../ui/LoginButton'; // adjust path if needed
+
 
 export interface MenuItem {
   label: string;
@@ -399,6 +401,29 @@ const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                 </span>
               </li>
             )}
+
+            <li className="sm-list-item mt-4">
+              {localStorage.getItem("username") ? (
+                <button
+                  onClick={() => {
+                    localStorage.removeItem("username");
+                    localStorage.removeItem("isAdmin");
+                    window.location.href = "/"; // redirect after logout
+                  }}
+                  className="sm-link px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+                >
+                  Welcome, {localStorage.getItem("username")}{" "}
+                  {localStorage.getItem("isAdmin") === "true" && "(Admin)"} — Logout
+                </button>
+              ) : (
+                <a
+                  href="/login"
+                  className="sm-link px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/80"
+                >
+                  Login
+                </a>
+              )}
+            </li>
           </ul>
           {displaySocials && socialItems && socialItems.length > 0 && (
             <div className="sm-socials" aria-label="Social links">
