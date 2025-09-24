@@ -9,6 +9,7 @@ import MapPage from "./pages/MapPage";
 import ReportPage from "./pages/ReportPage";
 import TutorialPage from "./pages/TutorialPage";
 import LoginPage from "./pages/LoginPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 import NotFound from "@/pages/not-found";
 import LanguageSwitcher from "./components/ui/LanguageSwitcher"; // <--- import
 
@@ -53,6 +54,7 @@ function App() {
                 <Route path="/report" element={<ReportPage />} />
                 <Route path="/tutorial" element={<TutorialPage />} />
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/analytics" element={<AnalyticsPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
