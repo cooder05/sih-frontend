@@ -19,6 +19,7 @@ import SplitText from "../components/ui/SplitText";
 // Fix default marker icon
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import LoginButton from '../components/ui/LoginButton';
 
 // Utility to create colored icons
 const createColoredIcon = (color: string) =>
@@ -136,7 +137,12 @@ const MapPage = () => {
   };
 
   return (
-    <div className="pt-24 p-8 max-w-6xl mx-auto bg-dark-bg min-h-screen">
+    <div className="relative pt-24 p-8 max-w-6xl mx-auto bg-dark-bg min-h-screen">
+      
+      <div className="absolute top-16 right-6">
+        <LoginButton />
+      </div>
+
       <SplitText
         text="Crisis Map"
         className="text-4xl md:text-5xl font-bold text-royal-gold mb-8"

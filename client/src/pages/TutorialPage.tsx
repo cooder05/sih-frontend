@@ -1,11 +1,16 @@
 import { useTranslation } from "react-i18next";
 import SplitText from '../components/ui/SplitText';
+import LoginButton from '../components/ui/LoginButton';
 
 const TutorialPage = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="pt-24 p-8 max-w-4xl mx-auto text-muted-foreground bg-dark-bg min-h-screen">
+    <div className=" relative pt-24 p-8 max-w-4xl mx-auto text-muted-foreground bg-dark-bg min-h-screen">
+      
+      <div className="absolute top-6 right-6">
+        <LoginButton />
+      </div>
       <SplitText
         text={t("how_to_use")}
         className="text-4xl md:text-5xl font-bold text-royal-gold mb-6"

@@ -1,10 +1,16 @@
 import { useTranslation } from "react-i18next";
+import LoginButton from '../components/ui/LoginButton';
 
 function HomePage() {
   const { t } = useTranslation();
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+      
+      <div style={{ position: "absolute", top: "5rem", right: "2rem" }}>
+        <LoginButton />
+      </div>
+      
       <h1 style={{ fontSize: "3rem", fontWeight: 700, color: "#FFC300", marginBottom: "0.5em", textAlign: "center" }}>
         {t("homepage_title")}
       </h1>
