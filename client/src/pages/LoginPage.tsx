@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // assuming react-router
+import { useNavigate } from 'react-router-dom';
 import SplitText from '../components/ui/SplitText';
 
 const LoginPage = () => {
@@ -11,21 +11,33 @@ const LoginPage = () => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Admin account
-    if (username === 'admin' && password === 'admin123') {
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('username', username);
-      localStorage.setItem('isAdmin', 'true');
-      navigate('/');
-      return;
-    }
+    const isAdmin = username === 'admin' && password === 'admin123';
 
-    // Regular username login (any non-empty username)
     if (username.trim() && password) {
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('username', username.trim());
-      localStorage.setItem('isAdmin', 'false');
-      navigate('/');
+      localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false');
+
+      // Get user's geolocation
+      if (!isAdmin && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            localStorage.setItem('userLat', position.coords.latitude.toString());
+            localStorage.setItem('userLng', position.coords.longitude.toString());
+            navigate('/');
+          },
+          () => {
+            // If user denies location, default to India
+            localStorage.setItem('userLat', '20.5937');
+            localStorage.setItem('userLng', '78.9629');
+            navigate('/');
+          }
+        );
+      } else {
+        // Admin or no geolocation support
+        navigate('/');
+      }
+
       return;
     }
 
@@ -42,7 +54,10 @@ const LoginPage = () => {
         tag="h1"
         textAlign="center"
       />
-      <form onSubmit={handleLogin} className="space-y-6 bg-card p-6 rounded-lg border border-card-border shadow-lg">
+      <form
+        onSubmit={handleLogin}
+        className="space-y-6 bg-card p-6 rounded-lg border border-card-border shadow-lg"
+      >
         <div>
           <label htmlFor="username" className="block text-card-foreground font-semibold mb-2">
             Username

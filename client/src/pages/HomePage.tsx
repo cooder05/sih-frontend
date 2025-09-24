@@ -5,17 +5,58 @@ function HomePage() {
   const { t } = useTranslation();
   const [hazardMarkers, setHazardMarkers] = useState<any[]>([]);
 
-  useEffect(() => {
-    // Check if user is admin
-    const isAdmin = localStorage.getItem("isAdmin") === "true";
+  // Haversine distance formula
+  const getDistance = (
+    lat1: number,
+    lng1: number,
+    lat2: number,
+    lng2: number
+  ) => {
+    const toRad = (x: number) => (x * Math.PI) / 180;
+    const R = 6371; // km
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
 
-    // Get hazard markers from localStorage
+  useEffect(() => {
+    const isAdmin = localStorage.getItem("isAdmin") === "true";
     const storedMarkers = localStorage.getItem("hazardMarkers");
+
     if (storedMarkers) {
       const parsedMarkers = JSON.parse(storedMarkers);
 
-      // Admin sees all, user sees only the first
-      setHazardMarkers(isAdmin ? parsedMarkers : parsedMarkers.slice(0, 1));
+      if (isAdmin) {
+        // Admin sees all markers
+        setHazardMarkers(parsedMarkers);
+      } else {
+        // Get user location from localStorage
+        const userLat = parseFloat(localStorage.getItem("userLat") || "20.5937");
+        const userLng = parseFloat(localStorage.getItem("userLng") || "78.9629");
+
+        // Find closest hazard
+        let closestMarker = parsedMarkers[0];
+        let minDistance = getDistance(
+          userLat,
+          userLng,
+          closestMarker.lat,
+          closestMarker.lng
+        );
+
+        for (const marker of parsedMarkers) {
+          const distance = getDistance(userLat, userLng, marker.lat, marker.lng);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestMarker = marker;
+          }
+        }
+
+        setHazardMarkers([closestMarker]); // only the closest
+      }
     }
   }, []);
 
